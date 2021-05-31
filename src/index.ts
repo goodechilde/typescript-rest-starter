@@ -1,8 +1,11 @@
+import "reflect-metadata"
+import { createConnection } from "typeorm"
 import express, { Application } from "express"
 import fs from "fs"
 import path from "path"
 import morgan from "morgan"
 import router from "./routes"
+import dbConfig from "./config/database"
 import swaggerUi from "swagger-ui-express"
 
 const SERVER_PORT = process.env.SERVER_PORT || 3333
@@ -29,6 +32,13 @@ app.use(
 )
 app.use(router)
 
-app.listen(SERVER_PORT, () => {
-    console.log(`Server is running on ${SERVER_HOST}:${SERVER_PORT}` )
-})
+createConnection(dbConfig)
+    .then((_connection) => {
+        app.listen(SERVER_PORT, () => {
+            console.log(`Server is running on ${SERVER_HOST}:${SERVER_PORT}` )
+        })
+    })
+    .catch((err) => {
+        console.log(`Unable to connect to db`, err )
+        process.exit(1)
+    })
